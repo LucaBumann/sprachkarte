@@ -3,7 +3,8 @@ from sqlalchemy.orm import declarative_base, relationship, sessionmaker
 from geoalchemy2 import Geometry
 
 # ⚠️ Passe das Passwort und evtl. den Datenbanknamen an:
-DATABASE_URL = "postgresql://postgres:Wochenende1357@localhost:3984/sprachkarte"
+import os
+DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://postgres:Wochenende1357@localhost:3984/sprachkarte")
 
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(bind=engine)
