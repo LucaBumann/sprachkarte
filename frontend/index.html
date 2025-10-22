@@ -2,6 +2,7 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Sprachkarte</title>
 
   <!-- Leaflet CSS -->
@@ -72,6 +73,8 @@
 
   <!-- Leaflet JS -->
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  
+  <script src="config.js"></script>
 
 <script>
   const map = L.map('map').setView([20, 0], 2);
@@ -97,7 +100,7 @@
   // -----------------------------
   // 🔹 1. Sprachen laden
   // -----------------------------
-  fetch('http://127.0.0.1:8000/gebiete')
+  fetch(`${CONFIG.API_BASE}/gebiete`)
     .then(res => res.json())
     .then(data => {
       if (!data.features) {
@@ -149,7 +152,7 @@
     sprachLabels = [];
 
     // Lade Dialekte nur für diese Sprache
-    fetch(`http://127.0.0.1:8000/dialekte/${sprache_id}`)
+    fetch(`${CONFIG.API_BASE}/dialekte/${sprache_id}`)
       .then(res => res.json())
       .then(data => {
         if (!data.features || data.features.length === 0) {
@@ -230,7 +233,7 @@
     removeBackButton();
 
     // Sprachlabels wieder hinzufügen
-    fetch('http://127.0.0.1:8000/gebiete')
+    fetch(`${CONFIG.API_BASE}/gebiete`)
       .then(res => res.json())
       .then(data => {
         data.features.forEach(feature => {
