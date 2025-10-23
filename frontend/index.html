@@ -4,76 +4,77 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Sprachkarte</title>
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
 
   <!-- Leaflet CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-
-  <!-- Turf.js für Geometrie-Berechnungen -->
-  <script src="https://unpkg.com/@turf/turf/turf.min.js"></script>
 
   <style>
     html, body { margin: 0; padding: 0; height: 100%; }
     #map { height: 100vh; width: 100%; }
 
-	/* Sprach-Labels (Sprachenebene) */
-	.lang-label {
-		color: rgba(0, 0, 0, 0.8);
-		font-weight: bold;
-		font-size: 13px;
-		text-align: center;
-		text-shadow: 1px 1px 2px white;
-		transform: translateX(-50%);
-	}
+    /* Sprach-Labels (Sprachenebene) */
+    .lang-label {
+      color: rgba(0, 0, 0, 0.8);
+      font-weight: bold;
+      font-size: 13px;
+      text-align: center;
+      text-shadow: 1px 1px 2px white;
+      transform: translateX(-50%);
+    }
 
-	/* Dialekt-Labels (Dialektebene) */
-	.dialekt-label {
-		color: darkgreen;
-		font-weight: normal;
-		font-size: 12px;
-		text-align: center;
-		text-shadow: 1px 1px 2px white;
-		transform: translateX(-50%);
-	}
-	
-	.audio-icon {
-		font-size: 20px;
-		color: darkred;
-		text-align: center;
-		text-shadow: 1px 1px 2px white;
-		background: none !important;   /* entfernt Markerhintergrund */
-		border: none !important;
-	}
-	
-	.audio-symbol {
-		font-size: 22px;
-		line-height: 22px;
-		color: darkred;
-		text-shadow: 1px 1px 2px white;
-		cursor: pointer;
-	}
-	#audioPlayer {
-		position: fixed;
-		bottom: 0;
-		left: 0;
-		width: 100%;
-		background: rgba(255,255,255,0.9);
-		border-top: 1px solid #aaa;
-		padding: 4px 10px;
-		z-index: 9999;
-		display: none;   /* erst sichtbar, wenn etwas abgespielt wird */
-	}
+    /* Dialekt-Labels (Dialektebene) */
+    .dialekt-label {
+      color: darkgreen;
+      font-weight: normal;
+      font-size: 12px;
+      text-align: center;
+      text-shadow: 1px 1px 2px white;
+      transform: translateX(-50%);
+    }
+
+    .audio-icon {
+      font-size: 20px;
+      color: darkred;
+      text-align: center;
+      text-shadow: 1px 1px 2px white;
+      background: none !important;
+      border: none !important;
+    }
+
+    .audio-symbol {
+      font-size: 22px;
+      line-height: 22px;
+      color: darkred;
+      text-shadow: 1px 1px 2px white;
+      cursor: pointer;
+    }
+
+    #audioPlayer {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      background: rgba(255,255,255,0.9);
+      border-top: 1px solid #aaa;
+      padding: 4px 10px;
+      z-index: 9999;
+      display: none;
+    }
   </style>
 </head>
 <body>
   <div id="map"></div>
+
   <!-- Audio-Player -->
   <div id="audioPlayer">
-  <audio id="audioElement" controls style="width:100%;"></audio>
+    <audio id="audioElement" controls style="width:100%;"></audio>
   </div>
 
-  <!-- Leaflet JS -->
+  <!-- 🔹 Alle Skripte am Ende laden -->
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-  
+  <script src="https://unpkg.com/@turf/turf/turf.min.js"></script>
+
   <script src="config.js"></script>
   <script src="main.js" defer></script>
 </body>
