@@ -10,7 +10,10 @@ app = FastAPI(title="Sprachkarte API")
 # CORS aktivieren
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[
+        "https://sprachexplorer.netlify.app",
+        "http://localhost:8080"  # für lokale Tests
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
