@@ -17,16 +17,32 @@
     const hue = Math.floor(Math.random() * 360);
     return `hsl(${hue}, 60%, 55%)`;
   }
+  
+  // Wiederholungs-Fetch, falls Render schläft
+  async function fetchWithRetry(url, options = {}, retries = 10, delay = 3000) {
+	for (let i = 0; i < retries; i++) {
+      try {
+		const res = await fetch(url, options);
+		if (!res.ok) throw new Error(`Fehler ${res.status}`);
+		return await res.json();
+      } catch (err) {
+		console.warn(`Fehler beim Laden (${i + 1}/${retries}):`, err.message);
+		if (i < retries - 1) {
+          await new Promise(r => setTimeout(r, delay));
+		}
+      }
+	}
+	throw new Error(`Backend ${url} nach ${retries} Versuchen nicht erreichbar.`);
+  }
 
   // -----------------------------
   // 🔹 1. Sprachen laden
   // -----------------------------
-  fetch(`${CONFIG.API_BASE}/gebiete`)
-    .then(res => res.json())
-    .then(data => {
+  fetchWithRetry(`${CONFIG.API_BASE}/gebiete`)
+	.then(data => {
       if (!data.features) {
-        console.error("Kein FeatureCollection-Format erkannt", data);
-        return;
+		console.error("Kein FeatureCollection-Format erkannt", data);
+		return;
       }
 
       sprachenLayer = L.geoJSON(data, {
@@ -73,13 +89,12 @@
     sprachLabels = [];
 
     // Lade Dialekte nur für diese Sprache
-    fetch(`${CONFIG.API_BASE}/dialekte/${sprache_id}`)
-      .then(res => res.json())
-      .then(data => {
-        if (!data.features || data.features.length === 0) {
-          alert("Keine Dialektgeometrien gefunden.");
-          return;
-        }
+	fetchWithRetry(`${CONFIG.API_BASE}/dialekte/${sprache_id}`)
+	  .then(data => {
+		if (!data.features || data.features.length === 0) {
+		  alert("Keine Dialektgeometrien gefunden.");
+		  return;
+		}
 
 		// getrennte Layer für Polygone & Audiopunkte
 		const polygons = data.features.filter(f => f.properties.type === "polygon");
@@ -129,6 +144,10 @@
 			marker.on('click', () => openAudioPlayer(audioUrl, f.properties.name));
 			audioMarkers.push(marker);
 		});
+      })
+	  .catch(err => {
+		console.error('Fehler beim Laden der Dialekte (nach mehreren Versuchen):', err);
+		alert("Das Backend konnte nicht erreicht werden. Bitte versuche es später erneut.");
       });
 
     showBackButton();

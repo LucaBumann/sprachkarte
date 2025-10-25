@@ -16,7 +16,7 @@ origins = [
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=origins + ["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -30,8 +30,14 @@ def get_db():
     finally:
         db.close()
 
+@app.get("/")
+def root():
+    return {"ok": True}
+
 # Tabellen automatisch erstellen (falls sie noch nicht existieren)
-Base.metadata.create_all(bind=engine)
+import os
+if os.getenv("RENDER") != "true":
+    Base.metadata.create_all(bind=engine)
 
 @app.get("/familien")
 def get_familien(db: Session = Depends(get_db)):
