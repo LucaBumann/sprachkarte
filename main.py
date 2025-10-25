@@ -4,6 +4,8 @@ from db.models import Base, engine, SessionLocal, Sprachfamilie, Sprache, Sprach
 from geoalchemy2.shape import to_shape
 from shapely.geometry import mapping
 from fastapi.middleware.cors import CORSMiddleware
+from functools import lru_cache
+import json
 
 app = FastAPI(title="Sprachkarte API")
 
@@ -21,6 +23,35 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# -----------------------------
+# 📦 Caching für Sprachgebiete
+# -----------------------------
+@lru_cache(maxsize=1)
+def cached_gebiete():
+    """Lädt alle Gebiete einmal aus der DB und cached sie im RAM."""
+    db = SessionLocal()
+    gebiete = db.query(Sprachgebiet).all()
+    features = []
+
+    for g in gebiete:
+        geom = to_shape(g.geom)
+        sprache = g.sprache # aus relationship
+        familie = sprache.familie if sprache else None
+
+        features.append({
+            "type": "Feature",
+            "geometry": mapping(geom),
+            "properties": {
+                "id": g.id,
+                "sprache_id": sprache.id if sprache else None,
+                "sprache_name": sprache.name if sprache else "Unbekannt",
+                "familie": familie.name if familie else "Unbekannt"
+            }
+        })
+
+    db.close()
+    return json.dumps({"type": "FeatureCollection", "features": features})
 
 # Datenbankverbindung pro Request
 def get_db():
@@ -48,27 +79,9 @@ def get_sprachen(familie_id: int, db: Session = Depends(get_db)):
     return db.query(Sprache).filter(Sprache.familie_id == familie_id).all()
 
 @app.get("/gebiete")
-def get_gebiete(db: Session = Depends(get_db)):
-    gebiete = db.query(Sprachgebiet).all()
-    features = []
-
-    for g in gebiete:
-        geom = to_shape(g.geom)
-        sprache = g.sprache  # aus relationship
-        familie = sprache.familie if sprache else None
-
-        features.append({
-            "type": "Feature",
-            "geometry": mapping(geom),
-            "properties": {
-                "id": g.id,
-                "sprache_id": sprache.id if sprache else None,
-                "sprache_name": sprache.name if sprache else "Unbekannt",
-                "familie": familie.name if familie else "Unbekannt"
-            }
-        })
-
-    return {"type": "FeatureCollection", "features": features}
+def get_gebiete():
+    """Gibt gecachte Sprachgebiete zurück."""
+    return json.loads(cached_gebiete())
 
 @app.get("/dialekte/{sprache_id}")
 def get_dialekte(sprache_id: int, db: Session = Depends(get_db)):
