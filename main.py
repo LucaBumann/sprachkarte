@@ -6,8 +6,10 @@ from shapely.geometry import mapping
 from fastapi.middleware.cors import CORSMiddleware
 from functools import lru_cache
 import json
+import logging
 
 app = FastAPI(title="Sprachkarte API")
+logger = logging.getLogger("uvicorn.error")
 
 # ✅ CORS korrekt für Netlify + lokal
 origins = [
@@ -52,6 +54,15 @@ def cached_gebiete():
 
     db.close()
     return json.dumps({"type": "FeatureCollection", "features": features})
+
+@app.on_event("startup")
+def startup_event():
+    try:
+        # füllt den Cache beim Start des Prozesses
+        cached_gebiete()
+        logger.info("cached_gebiete preloaded on startup")
+    except Exception as e:
+        logger.warning(f"Could not preload cache on startup: {e}")
 
 # Datenbankverbindung pro Request
 def get_db():
