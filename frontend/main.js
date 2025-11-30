@@ -83,75 +83,85 @@
   function showDialekte(sprache_id, layer) {
     map.fitBounds(layer.getBounds());
 
-    // Entferne Sprachenebene + Labels
+    // Sprachenebene ausblenden
     map.removeLayer(sprachenLayer);
     sprachLabels.forEach(lbl => map.removeLayer(lbl));
     sprachLabels = [];
 
-    // Lade Dialekte nur für diese Sprache
-	fetchWithRetry(`${CONFIG.API_BASE}/dialekte/${sprache_id}`)
-	  .then(data => {
-		if (!data.features || data.features.length === 0) {
-		  alert("Keine Dialektgeometrien gefunden.");
-		  return;
-		}
+    // 1️⃣ Zuerst statische Dialektgebiete laden
+    fetch("geojson/dialektgebiete.geojson")
+        .then(res => res.json())
+        .then(allDialektGeojson => {
 
-		// getrennte Layer für Polygone & Audiopunkte
-		const polygons = data.features.filter(f => f.properties.type === "polygon");
-		const audios = data.features.filter(f => f.properties.type === "audio");
+            // 2️⃣ Filtern: nur Dialekte dieser Sprache
+            const filtered = {
+                type: "FeatureCollection",
+                features: allDialektGeojson.features.filter(f => 
+                    f.properties.sprache_id == sprache_id
+                )
+            };
 
-        dialekteLayer = L.geoJSON(polygons, {
-          style: () => ({
-            color: randomColor(),
-            weight: 1,
-            fillOpacity: 0.5
-          }),
-          onEachFeature: (f, l) => {
-            const name = f.properties.dialekt_name || "Unbekannter Dialekt";
-            l.bindTooltip(`<b>${name}</b>`);
+            if (filtered.features.length === 0) {
+                alert("Keine Dialektgebiete für diese Sprache gefunden.");
+                return;
+            }
 
-            // Dialektlabel hinzufügen
-            const centroid = turf.centerOfMass(f);
-            const coords = [...centroid.geometry.coordinates].reverse();
-            const label = L.marker(coords, {
-              icon: L.divIcon({
-                className: 'dialekt-label',
-                html: name,
-                iconSize: [100, 20],
-                iconAnchor: [50, 10]
-              })
+            // 3️⃣ Polygone auf Karte
+            dialekteLayer = L.geoJSON(filtered, {
+                style: () => ({
+                    color: randomColor(),
+                    weight: 1,
+                    fillOpacity: 0.5
+                }),
+                onEachFeature: (f, l) => {
+                    const name = f.properties.dialekt_name || "Unbekannt";
+                    l.bindTooltip(`<b>${name}</b>`);
+
+                    const centroid = turf.centerOfMass(f);
+                    const coords = [...centroid.geometry.coordinates].reverse();
+                    const label = L.marker(coords, {
+                        icon: L.divIcon({
+                            className: 'dialekt-label',
+                            html: name,
+                            iconSize: [100, 20],
+                            iconAnchor: [50, 10]
+                        })
+                    }).addTo(map);
+
+                    dialektLabels.push(label);
+                }
             }).addTo(map);
-            dialektLabels.push(label);
-          }
-        }).addTo(map);
-		
-		// Audio-Punkte
-		audios.forEach(f => {
-			const coords = f.geometry.coordinates.reverse();
-			const audioUrl = f.properties.audio_url;
-			const icon = L.divIcon({
-			  html: '<span class="audio-symbol">🔊</span>',
-			  className: 'audio-icon',
-			  iconSize: [24, 24],
-			  iconAnchor: [12, 12]
-			});
-			const marker = L.marker(coords, {
-			  icon: icon,
-			  interactive: true,
-			  keyboard: false,
-			  bubblingMouseEvents: true
-			}).addTo(map);
-			marker.on('click', () => openAudioPlayer(audioUrl, f.properties.name));
-			audioMarkers.push(marker);
-		});
-      })
-	  .catch(err => {
-		console.error('Fehler beim Laden der Dialekte (nach mehreren Versuchen):', err);
-		alert("Das Backend konnte nicht erreicht werden. Bitte versuche es später erneut.");
-      });
+
+            // 4️⃣ OPTIONAL: Audio-Punkte weiterhin über Backend laden
+            fetchWithRetry(`${CONFIG.API_BASE}/dialekte/${sprache_id}`)
+                .then(data => {
+                    const audios = data.features.filter(f => f.properties.type === "audio");
+                    audios.forEach(f => {
+                        const coords = f.geometry.coordinates.reverse();
+                        const audioUrl = f.properties.audio_url;
+
+                        const icon = L.divIcon({
+                            html: '<span class="audio-symbol">🔊</span>',
+                            className: 'audio-icon',
+                            iconSize: [24, 24],
+                            iconAnchor: [12, 12]
+                        });
+
+                        const marker = L.marker(coords, {
+                            icon: icon,
+                            interactive: true
+                        }).addTo(map);
+
+                        marker.on('click', () => openAudioPlayer(audioUrl, f.properties.name));
+                        audioMarkers.push(marker);
+                    });
+                });
+
+        })
+        .catch(err => console.error("Fehler beim Laden der Dialekt-GEOJSON:", err));
 
     showBackButton();
-  }
+}
 
   // -----------------------------
   // 🔹 3. Zurück zur Sprachenebene
