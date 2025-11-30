@@ -10,68 +10,228 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 
   <style>
-    html, body { margin: 0; padding: 0; height: 100%; }
-    #map { height: 100vh; width: 100%; }
+  html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
 
-    /* Sprach-Labels (Sprachenebene) */
-    .lang-label {
-      color: rgba(0, 0, 0, 0.8);
-      font-weight: bold;
-      font-size: 13px;
-      text-align: center;
-      text-shadow: 1px 1px 2px white;
-      transform: translateX(-50%);
-    }
+  #map {
+    height: 100vh;
+    width: 100%;
+  }
 
-    /* Dialekt-Labels (Dialektebene) */
-    .dialekt-label {
-      color: darkgreen;
-      font-weight: normal;
-      font-size: 12px;
-      text-align: center;
-      text-shadow: 1px 1px 2px white;
-      transform: translateX(-50%);
-    }
+  /* Sprach-Labels (Sprachenebene) */
+  .lang-label {
+    color: rgba(0, 0, 0, 0.8);
+    font-weight: bold;
+    font-size: 13px;
+    text-align: center;
+    text-shadow: 1px 1px 2px white;
+    transform: translateX(-50%);
+  }
 
-    .audio-icon {
-      font-size: 20px;
-      color: darkred;
-      text-align: center;
-      text-shadow: 1px 1px 2px white;
-      background: none !important;
-      border: none !important;
-    }
+  /* Dialekt-Labels (Dialektebene) */
+  .dialekt-label {
+    color: darkgreen;
+    font-weight: normal;
+    font-size: 12px;
+    text-align: center;
+    text-shadow: 1px 1px 2px white;
+    transform: translateX(-50%);
+  }
 
-    .audio-symbol {
-      font-size: 22px;
-      line-height: 22px;
-      color: darkred;
-      text-shadow: 1px 1px 2px white;
-      cursor: pointer;
-    }
+  .audio-icon {
+    font-size: 20px;
+    color: darkred;
+    text-align: center;
+    text-shadow: 1px 1px 2px white;
+    background: none !important;
+    border: none !important;
+  }
 
-    #audioPlayer {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      width: 100%;
-      background: rgba(255,255,255,0.9);
-      border-top: 1px solid #aaa;
-      padding: 4px 10px;
-      z-index: 9999;
-      display: none;
-    }
+  .audio-symbol {
+    font-size: 22px;
+    line-height: 22px;
+    color: darkred;
+    text-shadow: 1px 1px 2px white;
+    cursor: pointer;
+  }
+
+  #audioPlayer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background: rgba(255,255,255,0.9);
+    border-top: 1px solid #aaa;
+    padding: 4px 10px;
+    z-index: 9999;
+    display: none;
+  }
+
+  /* 🔹 Intro-Overlay (Hauptmenü) */
+  #introOverlay {
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(circle at top, rgba(255,255,255,0.9), rgba(0,0,0,0.55));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10001;
+  }
+
+  #introCard {
+    background: #ffffff;
+    max-width: 800px;
+    width: calc(100% - 40px);
+    max-height: 80vh;
+    padding: 24px 26px 22px;
+    border-radius: 14px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+    overflow-y: auto;
+    box-sizing: border-box;
+  }
+
+  #introCard h1 {
+    margin-top: 0;
+    margin-bottom: 10px;
+    font-size: 24px;
+  }
+
+  #introCard h2 {
+    margin-top: 18px;
+    font-size: 18px;
+  }
+
+  #introCard p {
+    line-height: 1.5;
+    margin-bottom: 10px;
+  }
+
+  #introButtons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 16px;
+  }
+
+  .primary-btn {
+    border: none;
+    border-radius: 999px;
+    padding: 8px 16px;
+    font-size: 14px;
+    cursor: pointer;
+    background: #2563eb;
+    color: #fff;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  .primary-btn:hover {
+    filter: brightness(1.05);
+  }
+
+  .kofi-btn {
+    text-decoration: none;
+    border-radius: 999px;
+    padding: 8px 16px;
+    font-size: 14px;
+    cursor: pointer;
+    background: #ff5f5f;
+    color: #fff;
+    font-weight: 600;
+    border: 1px solid #ff5f5f;
+    white-space: nowrap;
+  }
+
+  .kofi-btn:hover {
+    filter: brightness(1.05);
+  }
+
+  /* Kleiner Info-Button, um das Intro später wieder zu öffnen */
+  #infoFloatingBtn {
+    position: fixed;
+    top: 12px;
+    right: 12px;
+    z-index: 10000;
+    border-radius: 20px;
+    padding: 6px 10px;
+    background: rgba(255,255,255,0.9);
+    border: 1px solid #444;
+    cursor: pointer;
+    font-size: 13px;
+  }
+
+  #infoFloatingBtn:hover {
+    background: #f3f3f3;
+  }
   </style>
 </head>
 <body>
+  <!-- 🔹 Intro-Overlay (Hauptmenü) -->
+  <div id="introOverlay">
+    <div id="introCard">
+      <h1>Sprachexplorer – Sprachen & Dialekte</h1>
+      <p>
+        Diese Karte zeigt die ungefähren ursprünglichen Verbreitungsgebiete von Sprachen
+        und ermöglicht einen Blick in ihre Dialektlandschaften. Du kannst auf eine Sprache
+        klicken und siehst die dazugehörigen Dialekte sowie Hörbeispiele.
+      </p>
+
+      <h2>Was du hier findest</h2>
+      <p>
+        – Sprachfamilien, Sprachen und Dialekte in mehreren Ebenen<br>
+        – Verbreitungsgebiete als Polygone auf einer Weltkarte<br>
+        – Audio-Beispiele ausgewählter Dialekte (🔊-Symbol)
+      </p>
+
+      <h2>Hinweise & Definitionen</h2>
+      <p>
+        Die Grenzen der Sprach- und Dialektgebiete sind idealisiert und orientieren sich
+        an linguistischen und historischen Quellen. Sie sind keine exakten politischen
+        oder ethnischen Grenzen.
+      </p>
+      <p>
+        <b>Sprachfamilie:</b> Gruppe genetisch verwandter Sprachen.<br>
+        <b>Sprache:</b> überregional anerkannte Varietät mit eigenem Standard (wo vorhanden).<br>
+        <b>Dialekt / Idiom:</b> regional begrenzte Varietäten innerhalb einer Sprache.
+      </p>
+
+      <div id="introButtons">
+        <!-- Karte öffnen -->
+        <button id="openMapBtn" class="primary-btn">
+          Karte ansehen
+        </button>
+
+        <!-- Ko-fi -->
+        <a
+          class="kofi-btn"
+          href="https://ko-fi.com/sprachexplorer"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          ☕ Unterstütze das Projekt auf Ko-fi
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- 🔹 Info-Button, um Intro später wieder zu öffnen -->
+  <button id="infoFloatingBtn" type="button">
+    Info
+  </button>
+
+  <!-- 🔹 Karte -->
   <div id="map"></div>
 
-  <!-- Audio-Player -->
+  <!-- 🔹 Audio-Player -->
   <div id="audioPlayer">
     <audio id="audioElement" controls style="width:100%;"></audio>
   </div>
 
-  <!-- 🔹 Alle Skripte am Ende laden -->
+  <!-- 🔹 Skripte -->
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
   <script src="https://unpkg.com/@turf/turf/turf.min.js"></script>
 

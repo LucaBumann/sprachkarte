@@ -265,3 +265,27 @@
 
   map.on('zoomend', updateLabelSize);
   map.whenReady(updateLabelSize);
+  
+  // -----------------------------
+  // 🔹 6. Intro-Overlay (Hauptmenü) steuern
+  // -----------------------------
+  const introOverlay = document.getElementById('introOverlay');
+  const openMapBtn = document.getElementById('openMapBtn');
+  const infoFloatingBtn = document.getElementById('infoFloatingBtn');
+
+  if (openMapBtn && introOverlay) {
+    openMapBtn.addEventListener('click', () => {
+      introOverlay.style.display = 'none';
+
+      // Leaflet nach dem Ausblenden sagen: „Größe neu berechnen“
+      setTimeout(() => {
+        map.invalidateSize();
+      }, 100);
+    });
+  }
+
+  if (infoFloatingBtn && introOverlay) {
+    infoFloatingBtn.addEventListener('click', () => {
+      introOverlay.style.display = 'flex';
+    });
+  }
