@@ -1,8 +1,23 @@
 {
-"type": "FeatureCollection",
-"name": "sql_statement",
-"crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },
-"features": [
-{ "type": "Feature", "properties": { "id": 1, "dialekt_id": 34, "name": "Visp", "audio_url": "audio/visp.mp3" }, "geometry": { "type": "Point", "coordinates": [ 7.882776, 46.292216 ] } }
-]
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          7.882776,
+          46.292216
+        ]
+      },
+      "properties": {
+        "name": "Visp",
+        "audio_url": "audio/visp.mp3",
+        "dialekt_id": 34,
+        "dialekt_name": "Walserdeutsch",
+        "sprache_id": 1,
+        "sprache_name": "Alemannisch"
+      }
+    }
+  ]
 }
