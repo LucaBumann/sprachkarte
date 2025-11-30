@@ -133,30 +133,37 @@
                 }
             }).addTo(map);
 
-            // 4️⃣ OPTIONAL: Audio-Punkte weiterhin über Backend laden
-            fetchWithRetry(`${CONFIG.API_BASE}/dialekte/${sprache_id}`)
-                .then(data => {
-                    const audios = data.features.filter(f => f.properties.type === "audio");
-                    audios.forEach(f => {
-                        const coords = f.geometry.coordinates.reverse();
-                        const audioUrl = f.properties.audio_url;
+            // 4️⃣ Audio-Punkte statisch laden
+			fetch("geojson/audio_punkte.geojson")
+				.then(res => res.json())
+				.then(allAudio => {
 
-                        const icon = L.divIcon({
-                            html: '<span class="audio-symbol">🔊</span>',
-                            className: 'audio-icon',
-                            iconSize: [24, 24],
-                            iconAnchor: [12, 12]
-                        });
+					const filteredAudio = allAudio.features.filter(f =>
+						f.properties.sprache_id == sprache_id
+					);
 
-                        const marker = L.marker(coords, {
-                            icon: icon,
-                            interactive: true
-                        }).addTo(map);
+					filteredAudio.forEach(f => {
+						const coords = [...f.geometry.coordinates].reverse();
+						const audioUrl = f.properties.audio_url;
 
-                        marker.on('click', () => openAudioPlayer(audioUrl, f.properties.name));
-                        audioMarkers.push(marker);
-                    });
-                });
+						const icon = L.divIcon({
+							html: '<span class="audio-symbol">🔊</span>',
+							className: 'audio-icon',
+							iconSize: [24, 24],
+							iconAnchor: [12, 12]
+						});
+
+						const marker = L.marker(coords, {
+							icon: icon,
+							interactive: true
+						}).addTo(map);
+
+						marker.on('click', () => openAudioPlayer(audioUrl, f.properties.name));
+						audioMarkers.push(marker);
+					});
+
+				})
+				.catch(err => console.error("Fehler beim Laden der Audio-Punkte:", err));
 
         })
         .catch(err => console.error("Fehler beim Laden der Dialekt-GEOJSON:", err));
