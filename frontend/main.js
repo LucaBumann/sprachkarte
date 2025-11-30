@@ -36,13 +36,14 @@
   }
 
   // -----------------------------
-  // 🔹 1. Sprachen laden
+  // 🔹 1. Sprachen laden (STATIC GEOJSON)
   // -----------------------------
-  fetchWithRetry(`${CONFIG.API_BASE}/gebiete`)
-	.then(data => {
+  fetch("geojson/sprachgebiete.geojson")
+    .then(res => res.json())
+    .then(data => {
       if (!data.features) {
-		console.error("Kein FeatureCollection-Format erkannt", data);
-		return;
+        console.error("Kein FeatureCollection-Format erkannt", data);
+        return;
       }
 
       sprachenLayer = L.geoJSON(data, {
@@ -58,7 +59,7 @@
         }
       }).addTo(map);
 
-      // Sprachlabels hinzufügen
+      // Sprachlabels setzen
       data.features.forEach(feature => {
         const centroid = turf.centerOfMass(feature);
         const coords = [...centroid.geometry.coordinates].reverse();
@@ -183,7 +184,7 @@
     removeBackButton();
 
     // Sprachlabels wieder hinzufügen
-    fetch(`${CONFIG.API_BASE}/gebiete`)
+    fetch("geojson/sprachgebiete.geojson")
       .then(res => res.json())
       .then(data => {
         data.features.forEach(feature => {
