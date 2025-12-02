@@ -19,35 +19,35 @@
   // 🔹 Schraffur-Patterns für linguistische Zonen
   // -----------------------------
   patternHoechst = new L.StripePattern({
-    weight: 14,        // testweise sehr deutlich
-    spaceWeight: 14,
+    weight: 10,        // testweise sehr deutlich
+    spaceWeight: 28,
     color: "#000000",
-    opacity: 0.6,
+    opacity: 0.4,
     spaceOpacity: 0.0,
     angle: 135
   }).addTo(map);
 
   patternHoch = new L.StripePattern({
-    weight: 10,
-    spaceWeight: 16,
+    weight: 7,
+    spaceWeight: 32,
     color: "#000000",
-    opacity: 0.5,
+    opacity: 0.4,
     spaceOpacity: 0.0,
     angle: 135
   }).addTo(map);
 
   patternMittel = new L.StripePattern({
-    weight: 6,
-    spaceWeight: 18,
+    weight: 4,
+    spaceWeight: 36,
     color: "#000000",
-    opacity: 0.45,
+    opacity: 0.4,
     spaceOpacity: 0.0,
     angle: 135
   }).addTo(map);
 
   patternNieder = new L.StripePattern({
-    weight: 4,
-    spaceWeight: 20,
+    weight: 2,
+    spaceWeight: 40,
     color: "#000000",
     opacity: 0.4,
     spaceOpacity: 0.0,
