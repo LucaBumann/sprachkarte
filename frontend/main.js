@@ -5,6 +5,8 @@
   let sprachLabels = [];
   let dialektLabels = [];
   let audioMarkers = [];
+  let hoverTimer = null;
+  let hoverPopup = null;
 
   // Karte anlegen
   const map = L.map('map').setView([20, 0], 2);
@@ -20,7 +22,7 @@
   // -----------------------------
   patternHoechst = new L.StripePattern({
     weight: 7,        // testweise sehr deutlich
-    spaceWeight: 100,
+    spaceWeight: 600,
     color: "#000000",
     opacity: 0.4,
     spaceOpacity: 0.0,
@@ -29,7 +31,7 @@
 
   patternHoch = new L.StripePattern({
     weight: 5,
-    spaceWeight: 120,
+    spaceWeight: 600,
     color: "#000000",
     opacity: 0.4,
     spaceOpacity: 0.0,
@@ -38,7 +40,7 @@
 
   patternMittel = new L.StripePattern({
     weight: 3,
-    spaceWeight: 140,
+    spaceWeight: 600,
     color: "#000000",
     opacity: 0.4,
     spaceOpacity: 0.0,
@@ -47,7 +49,7 @@
 
   patternNieder = new L.StripePattern({
     weight: 2,
-    spaceWeight: 160,
+    spaceWeight: 600,
     color: "#000000",
     opacity: 0.4,
     spaceOpacity: 0.0,
@@ -112,7 +114,7 @@
         color: fillColor,          // gleiche Farbe für Rand
         opacity: 0.95,             // Rand (fast) deckend
         weight: 3,                 // etwas dicker
-        dashArray: "6 6"           // gestrichelte Linie
+        dashArray: "6 9"           // gestrichelte Linie
       };
     }
     // 🔹 3. Standard-Dialekte (ohne Spezial-Zweigliederung)
@@ -125,8 +127,115 @@
       color: "#444444",
       opacity: 0.9,
       weight: 2.5,
-      dashArray: "5 5"            // hier schon leicht gestrichelt, wie gewünscht
+      dashArray: "5 8"            // hier schon leicht gestrichelt, wie gewünscht
     };
+  }
+
+  // -----------------------------
+  // 🔹 Mehrfach-Popup für Sprachen + Dialekte / Zonen
+  // -----------------------------
+  function showHoverPopupAt(latlng) {
+    const pt = turf.point([latlng.lng, latlng.lat]);
+
+    const languageMatches = [];
+    const dialectMatches = [];
+
+    // 1) Sprachgebiete (Sprachenebene)
+    if (sprachenLayer && map.hasLayer(sprachenLayer)) {
+      sprachenLayer.eachLayer(layer => {
+        const f = layer.feature;
+        if (!f || !f.geometry) return;
+
+        if (turf.booleanPointInPolygon(pt, f)) {
+          languageMatches.push(f);
+        }
+      });
+    }
+
+    // 2) Dialektgebiete (Dialektebene)
+    if (dialekteLayer && map.hasLayer(dialekteLayer)) {
+      dialekteLayer.eachLayer(layer => {
+        const f = layer.feature;
+        if (!f || !f.geometry) return;
+
+        if (turf.booleanPointInPolygon(pt, f)) {
+          dialectMatches.push(f);
+        }
+      });
+    }
+
+    // Nichts gefunden → Popup schließen
+    if (languageMatches.length === 0 && dialectMatches.length === 0) {
+      if (hoverPopup) {
+        map.closePopup(hoverPopup);
+        hoverPopup = null;
+      }
+      return;
+    }
+
+    // 3) Labels bauen
+
+    // Sprachen: Name + Familie
+    const langLabels = [...new Set(
+      languageMatches.map(f => {
+        const p = f.properties || {};
+        const name = p.sprache_name || p.name || "Sprache";
+        const fam  = p.familie || p.familie_name || null;
+
+        if (fam) {
+          return `<b>${name}</b> (Familie: ${fam})`;
+        }
+        return `<b>${name}</b>`;
+      })
+    )];
+
+    // Dialekte / Zonen / Kontaktzonen
+    const diaLabelsRaw = dialectMatches.map(f => {
+      const p = f.properties || {};
+      const typ = p.darstellungstyp || "standard";
+      const name = p.dialekt_name || "";
+
+      if (typ === "zone") {
+        // linguistische Zone
+        return name || "Linguistische Zone";
+      } else if (typ === "kontakt") {
+        // kulturelle Kontaktregion
+        if (name) {
+          return `Zone ${name}`;
+        }
+        return "Kontaktzone";
+      } else {
+        // normaler Dialekt
+        return name || "Dialekt";
+      }
+    });
+
+    const diaLabels = [...new Set(diaLabelsRaw)];
+
+    // 4) Inhalt zusammensetzen
+    const parts = [];
+
+    if (langLabels.length > 0) {
+      parts.push(`<b>${langLabels.join(", ")}</b>`);
+    }
+    if (diaLabels.length > 0) {
+      parts.push(diaLabels.join(", "));
+    }
+
+    const content = parts.join("<br>");
+
+    if (!hoverPopup) {
+      hoverPopup = L.popup({
+        closeButton: false,
+        autoPan: false,
+        offset: L.point(0, -8)
+      });
+    }
+
+    hoverPopup
+      .setLatLng(latlng)
+      .setContent(content)
+      .openOn(map);
   }
 
   // Wiederholungs-Fetch, falls Render schläft
@@ -165,7 +274,6 @@
         },
         onEachFeature: (feature, layer) => {
           const p = feature.properties;
-          layer.bindTooltip(`<b>${p.sprache_name}</b><br>Familie: ${p.familie}`);
           layer.on('click', () => showDialekte(p.sprache_id, layer));
         }
       }).addTo(map);
@@ -230,8 +338,6 @@
 
 					// Kontaktzonen für Alemannisch NICHT beschriften
 					if (!(isKontakt && isAlemannisch)) {
-						l.bindTooltip(`<b>${name}</b>`);
-
 						const centroid = turf.centerOfMass(f);
 						const coords = [...centroid.geometry.coordinates].reverse();
 						const label = L.marker(coords, {
@@ -323,6 +429,14 @@
           sprachLabels.push(label);
         });
       });
+	if (hoverTimer) {
+      clearTimeout(hoverTimer);
+      hoverTimer = null;
+    }
+    if (hoverPopup) {
+      map.closePopup(hoverPopup);
+      hoverPopup = null;
+    }
   }
 
   // -----------------------------
@@ -380,7 +494,47 @@
 
   map.on('zoomend', updateLabelSize);
   map.whenReady(updateLabelSize);
-  
+
+  // -----------------------------
+  // 🔹 Hover-Logik: Popup nach kurzem Stillstand der Maus (immer aktiv)
+  // -----------------------------
+  map.on('mousemove', (e) => {
+    if (hoverTimer) {
+      clearTimeout(hoverTimer);
+      hoverTimer = null;
+    }
+
+    const latlng = e.latlng;
+
+    hoverTimer = setTimeout(() => {
+      showHoverPopupAt(latlng);
+    }, 300); // Wartezeit in ms
+  });
+
+  // Optional: wenn die Maus die Karte verlässt, Popup schließen
+  map.on('mouseout', () => {
+    if (hoverTimer) {
+      clearTimeout(hoverTimer);
+      hoverTimer = null;
+    }
+    if (hoverPopup) {
+      map.closePopup(hoverPopup);
+      hoverPopup = null;
+    }
+  });
+
+  // Optional: wenn die Maus die Karte verlässt, Popup schließen
+  map.on('mouseout', () => {
+    if (hoverTimer) {
+      clearTimeout(hoverTimer);
+      hoverTimer = null;
+    }
+    if (hoverPopup) {
+      map.closePopup(hoverPopup);
+      hoverPopup = null;
+    }
+  });
+
   // -----------------------------
   // 🔹 6. Intro-Overlay (Hauptmenü) steuern
   // -----------------------------
