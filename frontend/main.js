@@ -1,3 +1,12 @@
+  // Globale Variablen zuerst deklarieren
+  let sprachenLayer;
+  let dialekteLayer;
+  let patternHoechst, patternHoch, patternMittel, patternNieder;
+  let sprachLabels = [];
+  let dialektLabels = [];
+  let audioMarkers = [];
+
+  // Karte anlegen
   const map = L.map('map').setView([20, 0], 2);
 
   // Grundkarte
@@ -10,47 +19,40 @@
   // 🔹 Schraffur-Patterns für linguistische Zonen
   // -----------------------------
   patternHoechst = new L.StripePattern({
-    weight: 8,         // breite Streifen
-    spaceWeight: 4,    // schmalere Lücken
+    weight: 14,        // testweise sehr deutlich
+    spaceWeight: 14,
     color: "#000000",
-    opacity: 0.45,     // Strichdeckkraft
-    spaceOpacity: 0.0, // Hintergrund bleibt transparent
-    angle: 135         // diagonale Schraffur
+    opacity: 0.6,
+    spaceOpacity: 0.0,
+    angle: 135
   }).addTo(map);
 
   patternHoch = new L.StripePattern({
-    weight: 6,
-    spaceWeight: 6,
+    weight: 10,
+    spaceWeight: 16,
     color: "#000000",
-    opacity: 0.40,
+    opacity: 0.5,
     spaceOpacity: 0.0,
     angle: 135
   }).addTo(map);
 
   patternMittel = new L.StripePattern({
-    weight: 4,
-    spaceWeight: 8,
+    weight: 6,
+    spaceWeight: 18,
     color: "#000000",
-    opacity: 0.35,
+    opacity: 0.45,
     spaceOpacity: 0.0,
     angle: 135
   }).addTo(map);
 
   patternNieder = new L.StripePattern({
-    weight: 3,
-    spaceWeight: 10,
+    weight: 4,
+    spaceWeight: 20,
     color: "#000000",
-    opacity: 0.30,
+    opacity: 0.4,
     spaceOpacity: 0.0,
     angle: 135
   }).addTo(map);
-
-  let sprachenLayer;
-  let dialekteLayer;
-  let patternHoechst, patternHoch, patternMittel, patternNieder;
-  let sprachLabels = [];
-  let dialektLabels = [];
-  let audioMarkers = [];
 
   // Hilfsfunktion für Zufallsfarbe
   function randomColor() {
