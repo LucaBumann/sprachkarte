@@ -22,7 +22,7 @@
   // -----------------------------
   patternHoechst = new L.StripePattern({
     weight: 5,        // testweise sehr deutlich
-    spaceWeight: 1000,
+    spaceWeight: 6000,
     color: "#000000",
     opacity: 0.4,
     spaceOpacity: 0.0,
@@ -30,26 +30,26 @@
   }).addTo(map);
 
   patternHoch = new L.StripePattern({
-    weight: 4,
-    spaceWeight: 1000,
+    weight: 3,
+    spaceWeight: 6000,
     color: "#000000",
     opacity: 0.4,
     spaceOpacity: 0.0,
-    angle: 135
+    angle: 180
   }).addTo(map);
 
   patternMittel = new L.StripePattern({
-    weight: 3,
-    spaceWeight: 1000,
+    weight: 1,
+    spaceWeight: 6000,
     color: "#000000",
     opacity: 0.4,
     spaceOpacity: 0.0,
-    angle: 135
+    angle: 90
   }).addTo(map);
 
   patternNieder = new L.StripePattern({
-    weight: 2,
-    spaceWeight: 1000,
+    weight: 0.5,
+    spaceWeight: 6000,
     color: "#000000",
     opacity: 0.4,
     spaceOpacity: 0.0,
