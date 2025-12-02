@@ -19,8 +19,8 @@
   // 🔹 Schraffur-Patterns für linguistische Zonen
   // -----------------------------
   patternHoechst = new L.StripePattern({
-    weight: 10,        // testweise sehr deutlich
-    spaceWeight: 75,
+    weight: 7,        // testweise sehr deutlich
+    spaceWeight: 100,
     color: "#000000",
     opacity: 0.4,
     spaceOpacity: 0.0,
@@ -28,8 +28,8 @@
   }).addTo(map);
 
   patternHoch = new L.StripePattern({
-    weight: 7,
-    spaceWeight: 90,
+    weight: 5,
+    spaceWeight: 120,
     color: "#000000",
     opacity: 0.4,
     spaceOpacity: 0.0,
@@ -37,8 +37,8 @@
   }).addTo(map);
 
   patternMittel = new L.StripePattern({
-    weight: 4,
-    spaceWeight: 105,
+    weight: 3,
+    spaceWeight: 140,
     color: "#000000",
     opacity: 0.4,
     spaceOpacity: 0.0,
@@ -47,7 +47,7 @@
 
   patternNieder = new L.StripePattern({
     weight: 2,
-    spaceWeight: 120,
+    spaceWeight: 160,
     color: "#000000",
     opacity: 0.4,
     spaceOpacity: 0.0,
@@ -111,8 +111,8 @@
         fillOpacity: 0.30,         // sehr transparent
         color: fillColor,          // gleiche Farbe für Rand
         opacity: 0.95,             // Rand (fast) deckend
-        weight: 6,                 // etwas dicker
-        dashArray: "4 4"           // gestrichelte Linie
+        weight: 3,                 // etwas dicker
+        dashArray: "6 6"           // gestrichelte Linie
       };
     }
     // 🔹 3. Standard-Dialekte (ohne Spezial-Zweigliederung)
@@ -124,8 +124,8 @@
       fillOpacity: 0.40,
       color: "#444444",
       opacity: 0.9,
-      weight: 4.5,
-      dashArray: "3 3"            // hier schon leicht gestrichelt, wie gewünscht
+      weight: 2.5,
+      dashArray: "5 5"            // hier schon leicht gestrichelt, wie gewünscht
     };
   }
 
@@ -336,7 +336,7 @@
       Object.assign(btn.style, {
         position: 'absolute',
         top: '15px',
-        left: '30px',
+        left: '50px',
         padding: '8px 14px',
         background: '#fff',
         border: '1px solid #333',
