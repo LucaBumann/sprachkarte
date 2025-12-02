@@ -20,7 +20,7 @@
   // -----------------------------
   patternHoechst = new L.StripePattern({
     weight: 10,        // testweise sehr deutlich
-    spaceWeight: 28,
+    spaceWeight: 75,
     color: "#000000",
     opacity: 0.4,
     spaceOpacity: 0.0,
@@ -29,7 +29,7 @@
 
   patternHoch = new L.StripePattern({
     weight: 7,
-    spaceWeight: 32,
+    spaceWeight: 90,
     color: "#000000",
     opacity: 0.4,
     spaceOpacity: 0.0,
@@ -38,7 +38,7 @@
 
   patternMittel = new L.StripePattern({
     weight: 4,
-    spaceWeight: 36,
+    spaceWeight: 105,
     color: "#000000",
     opacity: 0.4,
     spaceOpacity: 0.0,
@@ -47,7 +47,7 @@
 
   patternNieder = new L.StripePattern({
     weight: 2,
-    spaceWeight: 40,
+    spaceWeight: 120,
     color: "#000000",
     opacity: 0.4,
     spaceOpacity: 0.0,
@@ -111,7 +111,7 @@
         fillOpacity: 0.30,         // sehr transparent
         color: fillColor,          // gleiche Farbe für Rand
         opacity: 0.95,             // Rand (fast) deckend
-        weight: 2,                 // etwas dicker
+        weight: 6,                 // etwas dicker
         dashArray: "4 4"           // gestrichelte Linie
       };
     }
@@ -124,7 +124,7 @@
       fillOpacity: 0.40,
       color: "#444444",
       opacity: 0.9,
-      weight: 1.5,
+      weight: 4.5,
       dashArray: "3 3"            // hier schon leicht gestrichelt, wie gewünscht
     };
   }
