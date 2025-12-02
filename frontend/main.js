@@ -21,8 +21,8 @@
   // 🔹 Schraffur-Patterns für linguistische Zonen
   // -----------------------------
   patternHoechst = new L.StripePattern({
-    weight: 7,        // testweise sehr deutlich
-    spaceWeight: 600,
+    weight: 5,        // testweise sehr deutlich
+    spaceWeight: 1000,
     color: "#000000",
     opacity: 0.4,
     spaceOpacity: 0.0,
@@ -30,8 +30,8 @@
   }).addTo(map);
 
   patternHoch = new L.StripePattern({
-    weight: 5,
-    spaceWeight: 600,
+    weight: 4,
+    spaceWeight: 1000,
     color: "#000000",
     opacity: 0.4,
     spaceOpacity: 0.0,
@@ -40,7 +40,7 @@
 
   patternMittel = new L.StripePattern({
     weight: 3,
-    spaceWeight: 600,
+    spaceWeight: 1000,
     color: "#000000",
     opacity: 0.4,
     spaceOpacity: 0.0,
@@ -49,7 +49,7 @@
 
   patternNieder = new L.StripePattern({
     weight: 2,
-    spaceWeight: 600,
+    spaceWeight: 1000,
     color: "#000000",
     opacity: 0.4,
     spaceOpacity: 0.0,
@@ -114,7 +114,7 @@
         color: fillColor,          // gleiche Farbe für Rand
         opacity: 0.95,             // Rand (fast) deckend
         weight: 3,                 // etwas dicker
-        dashArray: "6 9"           // gestrichelte Linie
+        dashArray: "7 7"           // gestrichelte Linie
       };
     }
     // 🔹 3. Standard-Dialekte (ohne Spezial-Zweigliederung)
@@ -126,8 +126,8 @@
       fillOpacity: 0.40,
       color: "#444444",
       opacity: 0.9,
-      weight: 2.5,
-      dashArray: "5 8"            // hier schon leicht gestrichelt, wie gewünscht
+      weight: 2,
+      dashArray: "5 5"            // hier schon leicht gestrichelt, wie gewünscht
     };
   }
 
@@ -225,12 +225,14 @@
     const content = parts.join("<br>");
 
     if (!hoverPopup) {
-      hoverPopup = L.popup({
-        closeButton: false,
-        autoPan: false,
-        offset: L.point(0, -8)
-      });
-    }
+	  hoverPopup = L.popup({
+		closeButton: false,
+		autoPan: false,
+		offset: L.point(0, -8),
+		maxWidth: 180,
+		className: 'hover-popup-small'
+	  });
+	}
 
     hoverPopup
       .setLatLng(latlng)
@@ -408,7 +410,6 @@
 	audioMarkers = [];
 
     map.addLayer(sprachenLayer);
-    map.setView([20, 0], 2);
     removeBackButton();
 
     // Sprachlabels wieder hinzufügen
