@@ -34,6 +34,8 @@ class Dialekt(Base):
     name = Column(String(100), nullable=False)
     sprache_id = Column(Integer, ForeignKey("sprachen.id"))
     beschreibung = Column(Text)
+    darstellungstyp = Column(String(20), default="standard")
+    zone_code = Column(String(20))
     sprache = relationship("Sprache", back_populates="dialekte")
     gebiete = relationship("Dialektgebiet", back_populates="dialekt")  # ⬅️ NEU
     audio_punkte = relationship("AudioPunkt", back_populates="dialekt")

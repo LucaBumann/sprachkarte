@@ -57,7 +57,9 @@ for g in gebiete:
             "dialekt_id": dialekt.id,
             "dialekt_name": dialekt.name,
             "sprache_id": sprache.id,       # WICHTIG!!!
-            "sprache_name": sprache.name
+            "sprache_name": sprache.name,
+            "darstellungstyp": dialekt.darstellungstyp,
+            "zone_code": dialekt.zone_code
         }
     })
 

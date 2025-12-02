@@ -17,7 +17,69 @@
     const hue = Math.floor(Math.random() * 360);
     return `hsl(${hue}, 60%, 55%)`;
   }
-  
+  // Hilfsfunktion: deterministische Pastellfarbe pro Dialekt
+  function dialectColorById(dialektId) {
+    if (!dialektId) dialektId = 1;
+    const hue = (dialektId * 47) % 360;  // verteilt Hues halbwegs schön
+    const saturation = 60;              // mittlere Sättigung (Pastell)
+    const lightness = 75;               // eher hell
+    return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+  }
+
+  function dialectStyle(feature) {
+    const p = feature.properties || {};
+    const typ = p.darstellungstyp || "standard";
+    const zone = p.zone_code || null;
+
+    // 🔹 1. Linguistische Zonen (schwarz/grau hinterlegt)
+    if (typ === "zone") {
+      // Opazität je nach Zone (Nord–Süd-Abstufung)
+      const opacityByZone = {
+        hoechst: 0.45,
+        hoch:   0.35,
+        mittel: 0.28,
+        nieder: 0.20
+      };
+      const fillOpacity = opacityByZone[zone] ?? 0.3;
+
+      return {
+        color: "#000000",    // Randfarbe
+        weight: 0.7,
+        fillColor: "#000000",
+        fillOpacity: fillOpacity
+        // Schraffur/Pattern machen wir im nächsten Schritt
+      };
+    }
+
+    // 🔹 2. Kontaktzonen (pastell + gestrichelter Rand)
+    if (typ === "kontakt") {
+      const dialektId = p.dialekt_id;
+      const fillColor = dialectColorById(dialektId);
+
+      return {
+        fillColor: fillColor,
+        fillOpacity: 0.30,         // sehr transparent
+        color: fillColor,          // gleiche Farbe für Rand
+        opacity: 0.95,             // Rand (fast) deckend
+        weight: 2,                 // etwas dicker
+        dashArray: "4 4"           // gestrichelte Linie
+      };
+    }
+
+    // 🔹 3. Standard-Dialekte (ohne Spezial-Zweigliederung)
+    const dialektId = p.dialekt_id;
+    const fillColor = dialectColorById(dialektId);
+
+    return {
+      fillColor: fillColor,
+      fillOpacity: 0.40,
+      color: "#444444",
+      opacity: 0.9,
+      weight: 1.5,
+      dashArray: "3 3"            // hier schon leicht gestrichelt, wie gewünscht
+    };
+  }
+
   // Wiederholungs-Fetch, falls Render schläft
   async function fetchWithRetry(url, options = {}, retries = 10, delay = 3000) {
 	for (let i = 0; i < retries; i++) {
@@ -108,30 +170,34 @@
             }
 
             // 3️⃣ Polygone auf Karte
-            dialekteLayer = L.geoJSON(filtered, {
-                style: () => ({
-                    color: randomColor(),
-                    weight: 1,
-                    fillOpacity: 0.5
-                }),
-                onEachFeature: (f, l) => {
-                    const name = f.properties.dialekt_name || "Unbekannt";
-                    l.bindTooltip(`<b>${name}</b>`);
+			dialekteLayer = L.geoJSON(filtered, {
+				style: dialectStyle,
+				onEachFeature: (f, l) => {
+					const p = f.properties || {};
+					const name = p.dialekt_name || "Unbekannt";
 
-                    const centroid = turf.centerOfMass(f);
-                    const coords = [...centroid.geometry.coordinates].reverse();
-                    const label = L.marker(coords, {
-                        icon: L.divIcon({
-                            className: 'dialekt-label',
-                            html: name,
-                            iconSize: [100, 20],
-                            iconAnchor: [50, 10]
-                        })
-                    }).addTo(map);
+					const isKontakt = p.darstellungstyp === "kontakt";
+					const isAlemannisch = p.sprache_name === "Alemannisch";
 
-                    dialektLabels.push(label);
-                }
-            }).addTo(map);
+					// Kontaktzonen für Alemannisch NICHT beschriften
+					if (!(isKontakt && isAlemannisch)) {
+						l.bindTooltip(`<b>${name}</b>`);
+
+						const centroid = turf.centerOfMass(f);
+						const coords = [...centroid.geometry.coordinates].reverse();
+						const label = L.marker(coords, {
+							icon: L.divIcon({
+								className: 'dialekt-label',
+								html: name,
+								iconSize: [100, 20],
+								iconAnchor: [50, 10]
+							})
+						}).addTo(map);
+
+						dialektLabels.push(label);
+					}
+				}
+			}).addTo(map);
 
             // 4️⃣ Audio-Punkte statisch laden
 			fetch("geojson/audio_punkte.geojson")
@@ -221,7 +287,7 @@
       Object.assign(btn.style, {
         position: 'absolute',
         top: '15px',
-        left: '15px',
+        left: '20px',
         padding: '8px 14px',
         background: '#fff',
         border: '1px solid #333',
