@@ -6,8 +6,48 @@
     maxZoom: 14
   }).addTo(map);
 
+  // -----------------------------
+  // 🔹 Schraffur-Patterns für linguistische Zonen
+  // -----------------------------
+  patternHoechst = new L.StripePattern({
+    weight: 8,         // breite Streifen
+    spaceWeight: 4,    // schmalere Lücken
+    color: "#000000",
+    opacity: 0.45,     // Strichdeckkraft
+    spaceOpacity: 0.0, // Hintergrund bleibt transparent
+    angle: 135         // diagonale Schraffur
+  }).addTo(map);
+
+  patternHoch = new L.StripePattern({
+    weight: 6,
+    spaceWeight: 6,
+    color: "#000000",
+    opacity: 0.40,
+    spaceOpacity: 0.0,
+    angle: 135
+  }).addTo(map);
+
+  patternMittel = new L.StripePattern({
+    weight: 4,
+    spaceWeight: 8,
+    color: "#000000",
+    opacity: 0.35,
+    spaceOpacity: 0.0,
+    angle: 135
+  }).addTo(map);
+
+  patternNieder = new L.StripePattern({
+    weight: 3,
+    spaceWeight: 10,
+    color: "#000000",
+    opacity: 0.30,
+    spaceOpacity: 0.0,
+    angle: 135
+  }).addTo(map);
+
   let sprachenLayer;
   let dialekteLayer;
+  let patternHoechst, patternHoch, patternMittel, patternNieder;
   let sprachLabels = [];
   let dialektLabels = [];
   let audioMarkers = [];
@@ -33,24 +73,32 @@
 
     // 🔹 1. Linguistische Zonen (schwarz/grau hinterlegt)
     if (typ === "zone") {
-      // Opazität je nach Zone (Nord–Süd-Abstufung)
-      const opacityByZone = {
-        hoechst: 0.45,
-        hoch:   0.35,
-        mittel: 0.28,
-        nieder: 0.20
-      };
-      const fillOpacity = opacityByZone[zone] ?? 0.3;
+      let fillPattern = null;
+
+      switch (zone) {
+        case "hoechst":
+          fillPattern = patternHoechst;
+          break;
+        case "hoch":
+          fillPattern = patternHoch;
+          break;
+        case "mittel":
+          fillPattern = patternMittel;
+          break;
+        case "nieder":
+          fillPattern = patternNieder;
+          break;
+        default:
+          fillPattern = patternMittel;  // Fallback
+      }
 
       return {
-        color: "#000000",    // Randfarbe
+        color: "#000000",
         weight: 0.7,
-        fillColor: "#000000",
-        fillOpacity: fillOpacity
-        // Schraffur/Pattern machen wir im nächsten Schritt
+        fillOpacity: 1.0,     // das Muster selbst steuert die „Stärke“
+        fillPattern: fillPattern
       };
     }
-
     // 🔹 2. Kontaktzonen (pastell + gestrichelter Rand)
     if (typ === "kontakt") {
       const dialektId = p.dialekt_id;
@@ -65,7 +113,6 @@
         dashArray: "4 4"           // gestrichelte Linie
       };
     }
-
     // 🔹 3. Standard-Dialekte (ohne Spezial-Zweigliederung)
     const dialektId = p.dialekt_id;
     const fillColor = dialectColorById(dialektId);
@@ -287,7 +334,7 @@
       Object.assign(btn.style, {
         position: 'absolute',
         top: '15px',
-        left: '20px',
+        left: '30px',
         padding: '8px 14px',
         background: '#fff',
         border: '1px solid #333',
